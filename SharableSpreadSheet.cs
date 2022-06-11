@@ -227,72 +227,132 @@ namespace ShareableSpreadSheet
         }
 
         /// <summary>
-        /// 
+        /// exchange the content of col1 and col2
         /// </summary>
         /// <param name="col1"></param>
         /// <param name="col2"></param>
         public void exchangeCols(int col1, int col2)
         {
-            // exchange the content of col1 and col2
-        }
-        public int searchInRow(int row, String str)
-        {
-            int col;
-            // perform search in specific row
-            return col;
-        }
-        public int searchInCol(int col, String str)
-        {
-            int row;
-            // perform search in specific col
-            return row;
-        }
-        public Tuple<int, int> searchInRange(int col1, int col2, int row1, int row2, String str)
-        {
-            int row, col
-            // perform search within spesific range: [row1:row2,col1:col2] 
-            //includes col1,col2,row1,row2
-            return < row,col >;
-        }
-        public void addRow(int row1)
-        {
-            //add a row after row1
-        }
-        public void addCol(int col1)
-        {
-            //add a column after col1
-        }
-        public Tuple<int, int>[] findAll(String str, bool caseSensitive)
-        {
-            // perform search and return all relevant cells according to caseSensitive param
-        }
-        public void setAll(String oldStr, String newStr bool caseSensitive)
-        {
-            // replace all oldStr cells with the newStr str according to caseSensitive param
-        }
-        public Tuple<int, int> getSize()
-        {
-            int nRows, int nCols;
-            // return the size of the spreadsheet in nRows, nCols
-            return< nRows,nCols >;
-        }
-        public void setConcurrentSearchLimit(int nUsers)
-        {
-            // this function aims to limit the number of users that can perform the search operations concurrently.
-            // The default is no limit. When the function is called, the max number of concurrent search operations is set to nUsers. 
-            // In this case additional search operations will wait for existing search to finish.
-            // This function is used just in the creation
+
         }
 
+        /// <summary>
+        /// perform search in specific row
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public int searchInRow(int row, String str)
+        {
+            return 0;
+        }
+
+        /// <summary>
+        /// perform search in specific col
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public int searchInCol(int col, String str)
+        {
+            return 0;
+        }
+
+        /// <summary>
+        /// perform search within spesific range: [row1:row2,col1:col2]
+        /// includes col1,col2,row1,row2
+        /// </summary>
+        /// <param name="col1"></param>
+        /// <param name="col2"></param>
+        /// <param name="row1"></param>
+        /// <param name="row2"></param>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public Tuple<int, int> searchInRange(int col1, int col2, int row1, int row2, String str)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// add a row after row1
+        /// </summary>
+        /// <param name="row1"></param>
+        public void addRow(int row1)
+        {
+
+        }
+
+        /// <summary>
+        /// add a column after col1
+        /// </summary>
+        /// <param name="col1"></param>
+        public void addCol(int col1)
+        {
+
+        }
+
+        /// <summary>
+        /// perform search and return all relevant cells according to caseSensitive param
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="caseSensitive"></param>
+        /// <returns></returns>
+        public Tuple<int, int>[] findAll(String str, bool caseSensitive)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// replace all oldStr cells with the newStr str according to caseSensitive param
+        /// </summary>
+        /// <param name="oldStr"></param>
+        /// <param name="newStr"></param>
+        /// <param name="caseSensitive"></param>
+        public void setAll(String oldStr, String newStr, bool caseSensitive)
+        {
+             
+        }
+
+        /// <summary>
+        /// return the size of the spreadsheet in nRows, nCols
+        /// </summary>
+        /// <returns></returns>
+        public Tuple<int, int> getSize()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// this function aims to limit the number of users that can perform the search operations concurrently.
+        /// The default is no limit. When the function is called, the max number of concurrent search operations is set to nUsers. 
+        /// In this case additional search operations will wait for existing search to finish.
+        /// This function is used just in the creation
+        /// </summary>
+        /// <param name="nUsers"></param>
+        public void setConcurrentSearchLimit(int nUsers)
+        {
+            
+        }
+
+
+        /// <summary>
+        /// save the spreadsheet to a file fileName.
+        /// you can decide the format you save the data. There are several options.
+        /// </summary>
+        /// <param name="fileName"></param>
         public void save(String fileName)
         {
-            // save the spreadsheet to a file fileName.
-            // you can decide the format you save the data. There are several options.
+            
         }
+
+        /// <summary>
+        /// load the spreadsheet from fileName
+        /// replace the data and size of the current spreadsheet with the loaded data
+        /// </summary>
+        /// <param name="fileName"></param>
         public void load(String fileName)
         {
-            // load the spreadsheet from fileName
-            // replace the data and size of the current spreadsheet with the loaded data
+            
         }
     }
 }

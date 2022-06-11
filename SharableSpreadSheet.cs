@@ -179,10 +179,22 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public Tuple<int, int> searchString(String str)
         {
-            int row, col;
-            // return first cell indexes that contains the string (search from first row to the last row)
-            return < row, col >;
+            readerLock();
+            searchLock();
+            for (int i = 0; i < row; i++)
+            {
+                for (int j = 0; j < column; j++)
+                {
+                    if(spreadSheet[i,j].Contains(str))
+                        return new Tuple<int, int>(i, j);
+                }
+            }
+            searchReleaseLock();
+            readerReleaseLock();
+            return null;
         }
+
+
         public void exchangeRows(int row1, int row2)
         {
             // exchange the content of row1 and row2

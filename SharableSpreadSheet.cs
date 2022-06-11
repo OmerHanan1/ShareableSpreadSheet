@@ -20,6 +20,7 @@ namespace ShareableSpreadSheet
         private Semaphore searchSemaphore;                  // Privilege the number of searchers as described in setConcurrentSearchLimit func. documentation
         private int readers;                                // Counts number of readers
         private int writers;                                // Counts number of writers
+        private int numberOfUsers;                          // Given number of users
 
         /// <summary>
         /// Constructor
@@ -45,7 +46,7 @@ namespace ShareableSpreadSheet
         }
 
         /// <summary>
-        /// 
+        /// Lock, read
         /// </summary>
         private void readerLock()
         {
@@ -57,7 +58,7 @@ namespace ShareableSpreadSheet
         }
 
         /// <summary>
-        /// 
+        /// Lock releasing, read
         /// </summary>
         private void readerReleaseLock()
         {
@@ -69,7 +70,7 @@ namespace ShareableSpreadSheet
         }
 
         /// <summary>
-        /// 
+        /// Lock, write
         /// </summary>
         /// <param name="rowIndex"></param>
         /// <param name="columnIndex"></param>
@@ -91,7 +92,7 @@ namespace ShareableSpreadSheet
         }
 
         /// <summary>
-        /// 
+        /// Lock releasing, write
         /// </summary>
         /// <param name="rowIndex"></param>
         /// <param name="columnIndex"></param>
@@ -112,6 +113,23 @@ namespace ShareableSpreadSheet
             }
         }
 
+        /// <summary>
+        /// Lock, search
+        /// </summary>
+        private void searchLock() 
+        {
+            if(numberOfUsers != -1 && searchSemaphore != null)
+                searchSemaphore.WaitOne();
+        }
+        
+        /// <summary>
+        /// Lock releasing, search
+        /// </summary>
+        private void searchReleaseLock() 
+        {
+            if (numberOfUsers != -1 && searchSemaphore != null)
+                searchSemaphore.Release();
+        }
 
         private void structureChangeLock()
         {
@@ -122,10 +140,6 @@ namespace ShareableSpreadSheet
         {
 
         }
-
-        private void searchLock() { }
-        
-        private void searchReleaseLock() { }
 
         /// <summary>
         /// taks the string value of the cell by given row and column indexes

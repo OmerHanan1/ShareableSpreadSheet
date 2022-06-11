@@ -131,12 +131,18 @@ namespace ShareableSpreadSheet
                 searchSemaphore.Release();
         }
 
+        /// <summary>
+        /// Lock, structure
+        /// </summary>
         private void structureChangeLock()
         {
             changeSpreadSheetStructureMutex.WaitOne();
             modeSwitcher.WaitOne();
         }
 
+        /// <summary>
+        /// Lock releasing, structure
+        /// </summary>
         private void structureChangeReleaseLock()
         {
             modeSwitcher.Release();
@@ -178,7 +184,7 @@ namespace ShareableSpreadSheet
         /// searching for cell contains the given string value
         /// </summary>
         /// <param name="str">string value to search for</param>
-        /// <returns></returns>
+        /// <returns>row,col index pair</returns>
         public Tuple<int, int> searchString(String str)
         {
             readerLock();
@@ -197,13 +203,27 @@ namespace ShareableSpreadSheet
         }
 
         /// <summary>
-        /// 
+        /// replacing one row with another by given indexes
         /// </summary>
-        /// <param name="row1"></param>
-        /// <param name="row2"></param>
+        /// <param name="row1">first row index in the exchange</param>
+        /// <param name="row2">second row index in the exchange</param>
         public void exchangeRows(int row1, int row2)
         {
-            // exchange the content of row1 and row2
+            structureChangeLock();
+            if(this.row < row1 || this.row < row2) 
+            {
+                structureChangeReleaseLock();
+                return; 
+            }
+
+            string str;
+            for (int i = 0; i < column; i++)
+            {
+                str = spreadSheet[row1, i].ToString();
+                spreadSheet[row1, i] = spreadSheet[row2, i];
+                spreadSheet[row2, i] = str;
+            }
+            structureChangeReleaseLock();
         }
 
         /// <summary>

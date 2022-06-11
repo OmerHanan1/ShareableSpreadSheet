@@ -21,6 +21,12 @@ namespace ShareableSpreadSheet
         private int readers;                                // Counts number of readers
         private int writers;                                // Counts number of writers
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="nRows">number of rows in shared spreadsheet</param>
+        /// <param name="nCols">number of columns in shared spreadsheet</param>
+        /// <param name="nUsers">upper bound of users can access shared spreadsheet at once</param>
         public SharableSpreadSheet(int nRows, int nCols, int nUsers = -1)
         {
             row = nRows;
@@ -38,24 +44,125 @@ namespace ShareableSpreadSheet
             writers = 0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        private void readerLock()
+        {
+            readMutex.WaitOne();
+            Interlocked.Increment(ref readers);
+            if (readers == 1)
+                modeSwitcher.WaitOne();
+            readMutex.ReleaseMutex();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void readerReleaseLock()
+        {
+            readMutex.WaitOne();
+            Interlocked.Decrement(ref readers);
+            if (readers == 0)
+                modeSwitcher.WaitOne();
+            readMutex.ReleaseMutex();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <param name="columnIndex"></param>
+        private void writerLock(int rowIndex, int columnIndex)
+        {
+            if (rowIndex < 0 || columnIndex < 0 || row < rowIndex || column < columnIndex)
+            {
+                // do nothing
+            }
+            else
+            {
+                writeMutex.WaitOne();
+                Interlocked.Increment(ref writers);
+                if (writers == 1)
+                    modeSwitcher.WaitOne();
+                writeMutex.ReleaseMutex();
+                indexMutices[rowIndex].WaitOne();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rowIndex"></param>
+        /// <param name="columnIndex"></param>
+        private void writerReleaseLock(int rowIndex, int columnIndex)
+        {
+            if (rowIndex < 0 || columnIndex < 0 || row < rowIndex || column < columnIndex)
+            {
+                // do nothing
+            }
+            else
+            {
+                indexMutices[rowIndex].ReleaseMutex();
+                writeMutex.WaitOne();
+                Interlocked.Decrement(ref writers);
+                if (writers == 0)
+                    modeSwitcher.WaitOne();
+                writeMutex.ReleaseMutex();
+            }
+        }
+
+
+        private void structureChangeLock()
+        {
+
+        }
+
+        private void structureChangeReleaseLock()
+        {
+
+        }
+
+        private void searchLock() { }
+        
+        private void searchReleaseLock() { }
+
+        /// <summary>
+        /// taks the string value of the cell by given row and column indexes
+        /// </summary>
+        /// <param name="row">row index</param>
+        /// <param name="col">column index</param>
+        /// <returns>returns the string value inside the cell</returns>
         public String getCell(int row, int col)
         {
             if (this.row < row || this.column < col) { return null; }
 
             readerLock();
             string result = spreadSheet[row, col];
-            readerRelease();
+            readerReleaseLock();
             return result;
         }
+
+        /// <summary>
+        /// set the cell value to string value passed as argument
+        /// </summary>
+        /// <param name="row">row index</param>
+        /// <param name="col">column index</param>
+        /// <param name="str">string value</param>
         public void setCell(int row, int col, String str)
         {
             if (this.row < row || this.column < col) { return; }
 
             writerLock(row, col);
             spreadSheet[row, col] = str;
-            writerRelease(row, col);
+            writerReleaseLock(row, col);
         }
 
+        /// <summary>
+        /// searching for cell contains the given string value
+        /// </summary>
+        /// <param name="str">string value to search for</param>
+        /// <returns></returns>
         public Tuple<int, int> searchString(String str)
         {
             int row, col;
@@ -128,63 +235,6 @@ namespace ShareableSpreadSheet
         {
             // load the spreadsheet from fileName
             // replace the data and size of the current spreadsheet with the loaded data
-        }
-
-        private void readerLock() 
-        {
-            readMutex.WaitOne();
-            Interlocked.Increment(ref readers);
-            if (readers == 1)
-                modeSwitcher.WaitOne();
-            readMutex.ReleaseMutex();
-        }
-        private void readerRelease() 
-        {
-            readMutex.WaitOne();
-            Interlocked.Decrement(ref readers);
-            if (readers == 0)
-                modeSwitcher.WaitOne();
-            readMutex.ReleaseMutex();
-        }
-        private void writerLock(int rowIndex, int columnIndex) 
-        {
-            if (rowIndex < 0 || columnIndex < 0 || row < rowIndex || column < columnIndex) 
-            {
-                // do nothing
-            }
-            else 
-            {
-                writeMutex.WaitOne();
-                Interlocked.Increment(ref writers);
-                if (writers == 1)
-                    modeSwitcher.WaitOne();
-                writeMutex.ReleaseMutex();
-                indexMutices[rowIndex].WaitOne();
-            }
-        }
-        private void writerRelease(int rowIndex, int columnIndex) 
-        {
-            if (rowIndex < 0 || columnIndex < 0 || row < rowIndex || column < columnIndex)
-            {
-                // do nothing
-            }
-            else
-            {
-                indexMutices[rowIndex].ReleaseMutex();
-                writeMutex.WaitOne();
-                Interlocked.Decrement(ref writers);
-                if (writers == 0)
-                    modeSwitcher.WaitOne();
-                writeMutex.ReleaseMutex();
-            }
-        }
-        private void structureChangeLock() 
-        {
-
-        }
-        private void structureChangeRelease() 
-        {
-
         }
     }
 }

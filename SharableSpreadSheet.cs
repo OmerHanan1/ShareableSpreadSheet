@@ -40,15 +40,22 @@ namespace ShareableSpreadSheet
 
         public String getCell(int row, int col)
         {
-           
-            // return the string at [row,col]
-            return "";
+            if (this.row < row || this.column < col) { return null; }
+
+            readerLock();
+            string result = spreadSheet[row, col];
+            readerRelease();
+            return result;
         }
         public void setCell(int row, int col, String str)
         {
-            // set the string at [row,col]
+            if (this.row < row || this.column < col) { return; }
 
+            writerLock(row, col);
+            spreadSheet[row, col] = str;
+            writerRelease(row, col);
         }
+
         public Tuple<int, int> searchString(String str)
         {
             int row, col;

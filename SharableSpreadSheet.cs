@@ -133,12 +133,14 @@ namespace ShareableSpreadSheet
 
         private void structureChangeLock()
         {
-
+            changeSpreadSheetStructureMutex.WaitOne();
+            modeSwitcher.WaitOne();
         }
 
         private void structureChangeReleaseLock()
         {
-
+            modeSwitcher.Release();
+            changeSpreadSheetStructureMutex.ReleaseMutex();
         }
 
         /// <summary>
@@ -194,11 +196,21 @@ namespace ShareableSpreadSheet
             return null;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="row1"></param>
+        /// <param name="row2"></param>
         public void exchangeRows(int row1, int row2)
         {
             // exchange the content of row1 and row2
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="col1"></param>
+        /// <param name="col2"></param>
         public void exchangeCols(int col1, int col2)
         {
             // exchange the content of col1 and col2

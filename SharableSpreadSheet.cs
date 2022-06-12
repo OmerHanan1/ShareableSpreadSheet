@@ -431,10 +431,28 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public Tuple<int, int>[] findAll(String str, bool caseSensitive)
         {
+            List<Tuple<int, int>> result = new List<Tuple<int, int>>();
             readerLock();
+            searchLock();
+            for (int i = 0; i < this.row; i++)
+            {
+                for (int j = 0; j < this.column; j++)
+                {
+                    if (str.Equals(this.spreadSheet[i, j]))
+                    {
+                        result.Add(new Tuple<int, int>(i, j));
+                    }
+                }
+            }
 
+            searchReleaseLock();
             readerReleaseLock();
-            return null;
+            Tuple<int,int>[] tuples = new Tuple<int,int>[result.Count];
+            for (int i=0; i<tuples.Length;i++)
+            {
+                tuples[i] = result[i];
+            }
+            return tuples;
         }
 
         /// <summary>

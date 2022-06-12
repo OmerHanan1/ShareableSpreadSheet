@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -497,7 +498,9 @@ namespace ShareableSpreadSheet
         /// <param name="nUsers"></param>
         public void setConcurrentSearchLimit(int nUsers)
         {
-            
+            structureChangeLock();
+
+            structureChangeReleaseLock();
         }
 
 
@@ -508,7 +511,24 @@ namespace ShareableSpreadSheet
         /// <param name="fileName"></param>
         public void save(String fileName)
         {
-            
+            structureChangeLock();
+            string filePathName = fileName;
+            if(File.Exists(filePathName))
+                File.Delete(filePathName);
+
+            using (StreamWriter streamWriter = File.AppendText(filePathName))
+            {
+                streamWriter.WriteLine(row);
+                streamWriter.WriteLine(column);
+                for (int i = 0; i < row; i++)
+                {
+                    for (int j = 0; j < column; j++)
+                    {
+                        streamWriter.WriteLine(spreadSheet[i, j]);
+                    }
+                }
+            }
+            structureChangeReleaseLock();
         }
 
         /// <summary>

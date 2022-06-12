@@ -539,7 +539,28 @@ namespace ShareableSpreadSheet
         public void load(String fileName)
         {
             structureChangeLock();
-
+            if (File.Exists(fileName))
+            {
+                structureChangeReleaseLock();
+                return;
+            }
+            string filePathName = fileName;
+            using (StreamReader streamReader = new StreamReader(filePathName)) 
+            {
+                int readedRow = Int32.Parse(streamReader.ReadLine());
+                int readedColumn = Int32.Parse(streamReader.ReadLine());
+                string[,] readedSpreadSheet = new string[readedRow, readedColumn];
+                this.row = readedRow;
+                this.column = readedColumn;
+                this.spreadSheet = readedSpreadSheet;
+                for (int i = 0; i < readedRow; i++)
+                {
+                    for (int j = 0; j < readedColumn; j++)
+                    {
+                        this.spreadSheet[i,j] = streamReader.ReadLine();
+                    }
+                }
+            }
             structureChangeReleaseLock();
         }
     }

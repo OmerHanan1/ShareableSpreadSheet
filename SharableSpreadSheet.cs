@@ -400,10 +400,8 @@ namespace ShareableSpreadSheet
                 return;
             }
 
-            //Create a new matrix with the updated rows and column
             String[,] temp_grid = new String[this.row, this.column + 1];
 
-            //Copies from original matrix to the new matrix every cell until given column
             for (int i = 0; i <= col1; i++)
             {
                 for (int j = 0; j < this.row; j++)
@@ -412,7 +410,6 @@ namespace ShareableSpreadSheet
                 }
             }
 
-            //Copies from original matrix to the new matrix every cell from after the new column, until the end of the new matrix
             for (int i = col1 + 2; i < this.column + 1; i++)
             {
                 for (int j = 0; j < this.row; j++)
@@ -420,8 +417,6 @@ namespace ShareableSpreadSheet
                     temp_grid[j, i] = this.spreadSheet[j, i - 1];
                 }
             }
-
-            //Updates the grid and it's data
             this.spreadSheet = temp_grid;
             this.column = column +1;
 

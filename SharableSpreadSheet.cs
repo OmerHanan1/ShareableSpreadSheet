@@ -484,14 +484,18 @@ namespace ShareableSpreadSheet
                     {
                         if (oldStr.Equals(this.spreadSheet[i, j]))
                         {
-                           spreadSheet[i, j] = newStr;
+                            writerLock(i,j);
+                            spreadSheet[i, j] = newStr;
+                            writerReleaseLock(i,j);
                         }
                     }
                     else
                     {
                         if (oldStr.ToLower().Equals(this.spreadSheet[i, j].ToLower()))
                         {
+                            writerLock(i, j);
                             spreadSheet[i, j] = newStr;
+                            writerReleaseLock(i, j);
                         }
                     }
                 }

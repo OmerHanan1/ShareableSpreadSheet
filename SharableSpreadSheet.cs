@@ -9,8 +9,8 @@ namespace ShareableSpreadSheet
 {
     internal class SharableSpreadSheet
     {
-        private readonly int row;                           // Number of rows 
-        private readonly int column;                        // Number of columns  
+        private int row;                           // Number of rows 
+        private int column;                        // Number of columns  
         private string[,] spreadSheet;                      // The main data resource holds the string values
         private Mutex[] indexMutices;                       // Array of mutices responsible for lock the rows by index
         private Mutex readMutex;                            // Lock read mode operations
@@ -233,7 +233,21 @@ namespace ShareableSpreadSheet
         /// <param name="col2"></param>
         public void exchangeCols(int col1, int col2)
         {
+            structureChangeLock();
+            if (this.column < col1 || this.column < col2) 
+            {
+                structureChangeReleaseLock();
+                return;
+            }
 
+            string str;
+            for (int i = 0; i < row; i++)
+            {
+                str = spreadSheet[i,col1].ToString();
+                spreadSheet[i,col1] = spreadSheet[i, col2];
+                spreadSheet[i,col2] = str;
+            }
+            structureChangeReleaseLock();
         }
 
         /// <summary>
@@ -241,10 +255,29 @@ namespace ShareableSpreadSheet
         /// </summary>
         /// <param name="row"></param>
         /// <param name="str"></param>
-        /// <returns></returns>
+        /// <returns>returns col number if exists, -1 if not</returns>
         public int searchInRow(int row, String str)
         {
-            return 0;
+            readerLock();
+            searchLock();
+
+            if (this.row < row)
+            {
+                readerReleaseLock();
+                searchReleaseLock();
+                return -1;
+            }
+
+            for (int i = 0; i < column; i++)
+            {
+                if (str == spreadSheet[row, i].ToString())
+                {
+                    return i;
+                }
+            }
+            searchReleaseLock();
+            readerReleaseLock();
+            return -1;
         }
 
         /// <summary>
@@ -255,7 +288,26 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public int searchInCol(int col, String str)
         {
-            return 0;
+            readerLock();
+            searchLock();
+
+            if (this.column < col) 
+            {
+                searchReleaseLock();
+                readerReleaseLock();
+                return -1;
+            }
+
+            for (int i = 0; i < row; i++)
+            {
+                if (str == spreadSheet[i, col].ToString()) 
+                {
+                    return i;
+                }
+            }
+            searchReleaseLock();
+            readerReleaseLock();
+            return -1;
         }
 
         /// <summary>
@@ -270,6 +322,30 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public Tuple<int, int> searchInRange(int col1, int col2, int row1, int row2, String str)
         {
+            readerLock();
+            searchLock();
+            if ((col1 < 0) || (col2 < 0) || this.column < col1 || this.column < col2 || row2 < row1 || col2 < col1)
+            {
+                searchReleaseLock();
+                readerReleaseLock();
+                return null;
+            }
+
+            for (int i = row1; i < row2; i++)
+            {
+                for (int j = col1; j < col2; j++)
+                {
+                    if (str == spreadSheet[i, j])
+                    {
+                        searchReleaseLock();
+                        readerReleaseLock();
+                        return new Tuple<int, int>(i, j);
+                    }
+                }
+            }
+
+            searchReleaseLock();
+            readerReleaseLock();
             return null;
         }
 
@@ -279,7 +355,36 @@ namespace ShareableSpreadSheet
         /// <param name="row1"></param>
         public void addRow(int row1)
         {
+            structureChangeLock();
+            if (this.row < row1)
+            {
+                structureChangeReleaseLock();
+                return;
+            }
+            string[,] str = new string[this.row +1, this.column];
+            for (int i = 0; i < row1; i++) 
+            {
+                for (int j = 0; j < this.column; j++)
+                {
+                    str[i, j] = spreadSheet[i, j];
+                }
+            }
+            for (int i = row1 + 2; i < this.row +1; i++)
+            {
+                for (int j = 0; j < this.column; j++)
+                {
+                    str[i, j] = spreadSheet[i-1, j];
+                }
+            }
 
+            this.spreadSheet = str;
+            this.row = row + 1;
+            this.indexMutices = new Mutex[this.row];
+            for (int i = 0; i < this.row; i++)
+            {
+                this.indexMutices[i] = new Mutex();
+            }
+            structureChangeReleaseLock();
         }
 
         /// <summary>
@@ -288,7 +393,44 @@ namespace ShareableSpreadSheet
         /// <param name="col1"></param>
         public void addCol(int col1)
         {
+            structureChangeLock();
 
+            int real_col1 = col1 - 1;
+
+            if (this.column < col1)
+            {
+                structureChangeReleaseLock();
+                return;
+            }
+
+            //Create a new matrix with the updated rows and column
+            String[,] temp_grid = new String[this.rows, this.cols + 1];
+
+            //Copies from original matrix to the new matrix every cell until given column
+            for (int i = 0; i <= real_col1; i++)
+            {
+                for (int j = 0; j < this.rows; j++)
+                {
+                    temp_grid[j, i] = this.grid[j, i];
+                }
+            }
+
+            //Copies from original matrix to the new matrix every cell from after the new column, until the end of the new matrix
+            for (int i = col1 + 2; i < this.cols + 1; i++)
+            {
+                for (int j = 0; j < this.rows; j++)
+                {
+                    temp_grid[j, i] = this.grid[j, i - 1];
+                }
+            }
+
+            //Updates the grid and it's data
+            this.grid = temp_grid;
+            this.cols++;
+
+            Exit_section_structure();
+
+            return true;
         }
 
         /// <summary>

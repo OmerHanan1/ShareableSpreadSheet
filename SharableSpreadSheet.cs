@@ -394,9 +394,6 @@ namespace ShareableSpreadSheet
         public void addCol(int col1)
         {
             structureChangeLock();
-
-            int real_col1 = col1 - 1;
-
             if (this.column < col1)
             {
                 structureChangeReleaseLock();
@@ -404,33 +401,31 @@ namespace ShareableSpreadSheet
             }
 
             //Create a new matrix with the updated rows and column
-            String[,] temp_grid = new String[this.rows, this.cols + 1];
+            String[,] temp_grid = new String[this.row, this.column + 1];
 
             //Copies from original matrix to the new matrix every cell until given column
-            for (int i = 0; i <= real_col1; i++)
+            for (int i = 0; i <= col1; i++)
             {
-                for (int j = 0; j < this.rows; j++)
+                for (int j = 0; j < this.row; j++)
                 {
-                    temp_grid[j, i] = this.grid[j, i];
+                    temp_grid[j, i] = this.spreadSheet[j, i];
                 }
             }
 
             //Copies from original matrix to the new matrix every cell from after the new column, until the end of the new matrix
-            for (int i = col1 + 2; i < this.cols + 1; i++)
+            for (int i = col1 + 2; i < this.column + 1; i++)
             {
-                for (int j = 0; j < this.rows; j++)
+                for (int j = 0; j < this.row; j++)
                 {
-                    temp_grid[j, i] = this.grid[j, i - 1];
+                    temp_grid[j, i] = this.spreadSheet[j, i - 1];
                 }
             }
 
             //Updates the grid and it's data
-            this.grid = temp_grid;
-            this.cols++;
+            this.spreadSheet = temp_grid;
+            this.column = column +1;
 
-            Exit_section_structure();
-
-            return true;
+            structureChangeReleaseLock();
         }
 
         /// <summary>

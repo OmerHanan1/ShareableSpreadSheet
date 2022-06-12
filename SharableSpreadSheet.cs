@@ -18,7 +18,7 @@ namespace ShareableSpreadSheet
         private Mutex writeMutex;                           // Lock write mode exclusive operations
         private Mutex changeSpreadSheetStructureMutex;      // Lock operations that will change the main resource structure
         private Semaphore modeSwitcher;                     // Controls and switchs what operation is reflecting (read/write) 
-        private Semaphore searchSemaphore;                  // Privilege the number of searchers as described in setConcurrentSearchLimit func. documentation
+        private SemaphoreSlim searchSemaphore;              // Privilege the number of searchers as described in setConcurrentSearchLimit func. documentation
         private int readers;                                // Counts number of readers
         private int writers;                                // Counts number of writers
         private int numberOfUsers;                          // Given number of users
@@ -41,7 +41,7 @@ namespace ShareableSpreadSheet
             writeMutex = new Mutex();
             changeSpreadSheetStructureMutex = new Mutex();
             modeSwitcher = new Semaphore(1,1);
-            searchSemaphore = new Semaphore(1,nUsers);
+            searchSemaphore = null;
             readers = 0;
             writers = 0;
         }
@@ -119,8 +119,8 @@ namespace ShareableSpreadSheet
         /// </summary>
         private void searchLock() 
         {
-            if(numberOfUsers != -1 && searchSemaphore != null)
-                searchSemaphore.WaitOne();
+            if (numberOfUsers != -1 && searchSemaphore != null)
+                searchSemaphore.Wait();
         }
         
         /// <summary>
@@ -499,7 +499,7 @@ namespace ShareableSpreadSheet
         public void setConcurrentSearchLimit(int nUsers)
         {
             structureChangeLock();
-
+            this.searchSemaphore = new SemaphoreSlim(nUsers-1, nUsers);
             structureChangeReleaseLock();
         }
 
@@ -538,7 +538,9 @@ namespace ShareableSpreadSheet
         /// <param name="fileName"></param>
         public void load(String fileName)
         {
-            
+            structureChangeLock();
+
+            structureChangeReleaseLock();
         }
     }
 }

@@ -431,6 +431,9 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public Tuple<int, int>[] findAll(String str, bool caseSensitive)
         {
+            readerLock();
+
+            readerReleaseLock();
             return null;
         }
 
@@ -451,7 +454,10 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public Tuple<int, int> getSize()
         {
-            return null;
+            readerLock();
+            Tuple<int,int> result = new Tuple<int, int>(this.row, this.column);
+            readerReleaseLock();
+            return result;
         }
 
         /// <summary>

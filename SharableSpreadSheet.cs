@@ -474,7 +474,30 @@ namespace ShareableSpreadSheet
         /// <param name="caseSensitive"></param>
         public void setAll(String oldStr, String newStr, bool caseSensitive)
         {
-             
+            readerLock();
+            searchLock();
+            for (int i = 0; i < this.row; i++)
+            {
+                for (int j = 0; j < this.column; j++)
+                {
+                    if (caseSensitive)
+                    {
+                        if (oldStr.Equals(this.spreadSheet[i, j]))
+                        {
+                           spreadSheet[i, j] = newStr;
+                        }
+                    }
+                    else
+                    {
+                        if (oldStr.ToLower().Equals(this.spreadSheet[i, j].ToLower()))
+                        {
+                            spreadSheet[i, j] = newStr;
+                        }
+                    }
+                }
+            }
+            searchReleaseLock();
+            readerReleaseLock();
         }
 
         /// <summary>

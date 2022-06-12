@@ -9,8 +9,8 @@ namespace ShareableSpreadSheet
 {
     internal class SharableSpreadSheet
     {
-        private int row;                           // Number of rows 
-        private int column;                        // Number of columns  
+        private int row;                                    // Number of rows 
+        private int column;                                 // Number of columns  
         private string[,] spreadSheet;                      // The main data resource holds the string values
         private Mutex[] indexMutices;                       // Array of mutices responsible for lock the rows by index
         private Mutex readMutex;                            // Lock read mode operations
@@ -438,9 +438,19 @@ namespace ShareableSpreadSheet
             {
                 for (int j = 0; j < this.column; j++)
                 {
-                    if (str.Equals(this.spreadSheet[i, j]))
+                    if (caseSensitive)
                     {
-                        result.Add(new Tuple<int, int>(i, j));
+                        if (str.Equals(this.spreadSheet[i, j]))
+                        {
+                            result.Add(new Tuple<int, int>(i, j));
+                        }
+                    }
+                    else
+                    {
+                        if (str.ToLower().Equals(this.spreadSheet[i, j].ToLower()))
+                        {
+                            result.Add(new Tuple<int, int>(i, j));
+                        }
                     }
                 }
             }

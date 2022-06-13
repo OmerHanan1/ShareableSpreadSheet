@@ -79,7 +79,7 @@ namespace ShareableSpreadSheet
         {
             if (rowIndex < 0 || columnIndex < 0 || row < rowIndex || column < columnIndex)
             {
-                // do nothing
+                throw new ArgumentException("Arguments provided are negative or out of range");
             }
             else
             {
@@ -158,7 +158,10 @@ namespace ShareableSpreadSheet
         /// <returns>returns the string value inside the cell</returns>
         public String getCell(int row, int col)
         {
-            if (this.row < row || this.column < col) { return null; }
+            if (this.row < row || this.column < col) 
+            {
+                throw new ArgumentOutOfRangeException("Arguments out of range");
+            }
 
             readerLock();
             string result = spreadSheet[row, col];

@@ -219,7 +219,7 @@ namespace ShareableSpreadSheet
             if(this.row < row1 || this.row < row2) 
             {
                 structureChangeReleaseLock();
-                return; 
+                throw new ArgumentOutOfRangeException($"Arguments supplied: row1 {row1}:row2 {row2}, are out of range");
             }
 
             string str;
@@ -243,7 +243,7 @@ namespace ShareableSpreadSheet
             if (this.column < col1 || this.column < col2) 
             {
                 structureChangeReleaseLock();
-                return;
+                throw new ArgumentOutOfRangeException($"Arguments supplied: col1 {col1}:col2 {col2}, are out of range");
             }
 
             string str;
@@ -271,7 +271,7 @@ namespace ShareableSpreadSheet
             {
                 readerReleaseLock();
                 searchReleaseLock();
-                return -1;
+                throw new ArgumentOutOfRangeException($"Argument supplied: row {row} is out of range");
             }
 
             for (int i = 0; i < column; i++)
@@ -301,7 +301,7 @@ namespace ShareableSpreadSheet
             {
                 searchReleaseLock();
                 readerReleaseLock();
-                return -1;
+                throw new ArgumentOutOfRangeException($"Argument supplied: col {col} is out of range");
             }
 
             for (int i = 0; i < row; i++)

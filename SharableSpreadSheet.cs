@@ -174,7 +174,9 @@ namespace ShareableSpreadSheet
         /// <param name="str">string value</param>
         public void setCell(int row, int col, String str)
         {
-            if (this.row < row || this.column < col) { return; }
+            if (this.row < row || this.column < col) {
+                throw new ArgumentOutOfRangeException($"Arguments supplied: row {row}:col {col}, are out of range");
+            }
 
             writerLock(row, col);
             spreadSheet[row, col] = str;

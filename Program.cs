@@ -151,23 +151,24 @@ namespace ShareableSpreadSheet
                     for (int j = 0; j < cols; j++)
                     {
                         spreadSheet.setCell(i, j, "testcell" + count.ToString());
-                        //spreadSheet.spreadSheet[i, j] = "test";
+                        //spreadSheet.spreadSheet[i, j] = "testcell" + count.ToString();
                         count++;
-                        Thread.Sleep(20);
                     }
                 }
 
                 //Dictionary<int, Thread> threads = new Dictionary<int, Thread>();
 
                 List<Thread> threads = new List<Thread>();
-
                 for (int i = 0; i < nThreads; i++)
                 {
-                    Thread.Sleep(mssleep);
+                    var th = new Thread(() => ThreadWork.DoWork(nOperations, mssleep, spreadSheet, i, Globals.Rows, Globals.Columns, nThreads));
 
-                    var thread = new Thread(new ParameterizedThreadStart(ThreadWork.DoWork));
-                    threads.Add(thread);
-                    thread.Start(nOperations, mssleep, spreadSheet, i, Globals.Rows, Globals.Columns, nThreads);
+                    //ThreadWork.DoWork(nOperations, mssleep, spreadSheet, i, Globals.Rows, Globals.Columns, nThreads);
+
+                    //threads.Add(i, tread);
+
+                    threads.Add(th);
+                    threads[i].Start();
                 }
 
                 foreach (Thread thread in threads)
@@ -176,7 +177,7 @@ namespace ShareableSpreadSheet
 
             }
 
-            Simulator(5, 5, 2, 5, 500);
+            Simulator(10, 10, 5, 5, 500);
         }
     }
 }

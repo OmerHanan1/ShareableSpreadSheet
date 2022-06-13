@@ -334,7 +334,7 @@ namespace ShareableSpreadSheet
             {
                 searchReleaseLock();
                 readerReleaseLock();
-                return null;
+                throw new ArgumentOutOfRangeException($"One or more arguments supplied: row1 {row1}:col1 {col1}:row2 {row2}:col2{col2}, are out of range");
             }
 
             for (int i = row1; i < row2; i++)
@@ -365,7 +365,7 @@ namespace ShareableSpreadSheet
             if (this.row < row1)
             {
                 structureChangeReleaseLock();
-                return;
+                throw new ArgumentOutOfRangeException($"Argument supplied: row1 {row1} is out of range");
             }
             string[,] str = new string[this.row +1, this.column];
             for (int i = 0; i < row1; i++) 
@@ -403,7 +403,7 @@ namespace ShareableSpreadSheet
             if (this.column < col1)
             {
                 structureChangeReleaseLock();
-                return;
+                throw new ArgumentOutOfRangeException($"Argument supplied: col {col1} is out of range");
             }
 
             String[,] temp_grid = new String[this.row, this.column + 1];

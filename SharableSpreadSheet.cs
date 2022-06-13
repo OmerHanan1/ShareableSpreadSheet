@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace ShareableSpreadSheet
 {
-    internal class SharableSpreadSheet
+    public class SharableSpreadSheet
     {
         private int row;                                    // Number of rows 
         private int column;                                 // Number of columns  
-        private string[,] spreadSheet;                      // The main data resource holds the string values
+        public string[,] spreadSheet;                      // The main data resource holds the string values
         private Mutex[] indexMutices;                       // Array of mutices responsible for lock the rows by index
         private Mutex readMutex;                            // Lock read mode operations
         private Mutex writeMutex;                           // Lock write mode exclusive operations
@@ -21,7 +21,7 @@ namespace ShareableSpreadSheet
         private SemaphoreSlim searchSemaphore;              // Privilege the number of searchers as described in setConcurrentSearchLimit func. documentation
         private int readers;                                // Counts number of readers
         private int writers;                                // Counts number of writers
-        private int numberOfUsers;                          // Given number of users
+        //private int numberOfUsers;                          // Given number of users
 
         /// <summary>
         /// Constructor
@@ -34,6 +34,11 @@ namespace ShareableSpreadSheet
             row = nRows;
             column = nCols;
             spreadSheet = new string[nRows, nCols];
+            for (int i = 0; i < nRows; i++)
+            {
+                for (int j = 0; j < nCols; j++)
+                    spreadSheet[i, j] = "";
+            }
             indexMutices = new Mutex[nRows];
             for (int i = 0; i < nRows; i++)
                 indexMutices[i] = new Mutex();
@@ -44,6 +49,7 @@ namespace ShareableSpreadSheet
             searchSemaphore = null;
             readers = 0;
             writers = 0;
+
         }
 
         /// <summary>
@@ -52,7 +58,7 @@ namespace ShareableSpreadSheet
         private void readerLock()
         {
             readMutex.WaitOne();
-            Interlocked.Increment(ref readers);
+            Interlocked.Increment(ref this.readers);
             if (readers == 1)
                 modeSwitcher.WaitOne();
             readMutex.ReleaseMutex();
@@ -64,9 +70,9 @@ namespace ShareableSpreadSheet
         private void readerReleaseLock()
         {
             readMutex.WaitOne();
-            Interlocked.Decrement(ref readers);
+            Interlocked.Decrement(ref this.readers);
             if (readers == 0)
-                modeSwitcher.WaitOne();
+                modeSwitcher.Release();
             readMutex.ReleaseMutex();
         }
 
@@ -84,7 +90,7 @@ namespace ShareableSpreadSheet
             else
             {
                 writeMutex.WaitOne();
-                Interlocked.Increment(ref writers);
+                Interlocked.Increment(ref this.writers);
                 if (writers == 1)
                     modeSwitcher.WaitOne();
                 writeMutex.ReleaseMutex();
@@ -107,9 +113,9 @@ namespace ShareableSpreadSheet
             {
                 indexMutices[rowIndex].ReleaseMutex();
                 writeMutex.WaitOne();
-                Interlocked.Decrement(ref writers);
+                Interlocked.Decrement(ref this.writers);
                 if (writers == 0)
-                    modeSwitcher.WaitOne();
+                    modeSwitcher.Release();
                 writeMutex.ReleaseMutex();
             }
         }
@@ -119,7 +125,7 @@ namespace ShareableSpreadSheet
         /// </summary>
         private void searchLock() 
         {
-            if (numberOfUsers != -1 && searchSemaphore != null)
+            if (searchSemaphore != null)
                 searchSemaphore.Wait();
         }
         
@@ -128,7 +134,7 @@ namespace ShareableSpreadSheet
         /// </summary>
         private void searchReleaseLock() 
         {
-            if (numberOfUsers != -1 && searchSemaphore != null)
+            if ( searchSemaphore != null)
                 searchSemaphore.Release();
         }
 
@@ -199,8 +205,11 @@ namespace ShareableSpreadSheet
             {
                 for (int j = 0; j < column; j++)
                 {
-                    if(spreadSheet[i,j].Contains(str))
-                        return new Tuple<int, int>(i, j);
+                    if (spreadSheet[i, j] != null)
+                    {
+                        if (spreadSheet[i, j].Contains(str))
+                            return new Tuple<int, int>(i, j);
+                    }
                 }
             }
             searchReleaseLock();
@@ -225,9 +234,12 @@ namespace ShareableSpreadSheet
             string str;
             for (int i = 0; i < column; i++)
             {
-                str = spreadSheet[row1, i].ToString();
-                spreadSheet[row1, i] = spreadSheet[row2, i];
-                spreadSheet[row2, i] = str;
+                if (spreadSheet[row1, i] != null)
+                {
+                    str = spreadSheet[row1, i].ToString();
+                    spreadSheet[row1, i] = spreadSheet[row2, i];
+                    spreadSheet[row2, i] = str;
+                }
             }
             structureChangeReleaseLock();
         }
@@ -306,9 +318,12 @@ namespace ShareableSpreadSheet
 
             for (int i = 0; i < row; i++)
             {
-                if (str == spreadSheet[i, col].ToString()) 
+                if (spreadSheet[i, col] != null)
                 {
-                    return i;
+                    if (str == spreadSheet[i, col].ToString())
+                    {
+                        return i;
+                    }
                 }
             }
             searchReleaseLock();

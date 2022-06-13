@@ -160,7 +160,7 @@ namespace ShareableSpreadSheet
         {
             if (this.row < row || this.column < col) 
             {
-                throw new ArgumentOutOfRangeException("Arguments out of range");
+                throw new ArgumentOutOfRangeException($"Arguments supplied: row {row}:col {col}, are out of range");
             }
 
             readerLock();

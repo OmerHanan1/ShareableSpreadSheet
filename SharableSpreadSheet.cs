@@ -101,7 +101,7 @@ namespace ShareableSpreadSheet
         {
             if (rowIndex < 0 || columnIndex < 0 || row < rowIndex || column < columnIndex)
             {
-                // do nothing
+                throw new ArgumentException("Arguments provided are negative or out of range");
             }
             else
             {

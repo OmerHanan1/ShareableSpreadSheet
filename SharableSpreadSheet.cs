@@ -13,7 +13,7 @@ namespace ShareableSpreadSheet
         private int row;                                    // Number of rows 
         private int column;                                 // Number of columns  
         public string[,] spreadSheet;                       // The main data resource holds the string values
-        private Mutex[] indexMutices;                       // Array of mutices responsible for lock the rows by index
+        private Mutex[] rowIndexMutices;                    // Array of mutices responsible for lock the rows by index
         private Mutex readMutex;                            // Lock read mode operations
         private Mutex writeMutex;                           // Lock write mode exclusive operations
         private Mutex changeSpreadSheetStructureMutex;      // Lock operations that will change the main resource structure
@@ -34,9 +34,9 @@ namespace ShareableSpreadSheet
             row = nRows;
             column = nCols;
             spreadSheet = new string[nRows, nCols];
-            indexMutices = new Mutex[nRows];
+            rowIndexMutices = new Mutex[nRows];
             for (int i = 0; i < nRows; i++)
-                indexMutices[i] = new Mutex();
+                rowIndexMutices[i] = new Mutex();
             readMutex = new Mutex();
             writeMutex = new Mutex();
             changeSpreadSheetStructureMutex = new Mutex();
@@ -101,7 +101,7 @@ namespace ShareableSpreadSheet
                     Console.WriteLine("WriteLock-In");
                 }
                 writeMutex.ReleaseMutex();
-                indexMutices[rowIndex].WaitOne();
+                rowIndexMutices[rowIndex].WaitOne();
             }
 
         }
@@ -120,7 +120,7 @@ namespace ShareableSpreadSheet
             }
             else
             {
-                indexMutices[rowIndex].ReleaseMutex();
+                rowIndexMutices[rowIndex].ReleaseMutex();
                 writeMutex.WaitOne();
                 Interlocked.Decrement(ref this.writers);
                 if (writers == 0)
@@ -444,7 +444,7 @@ namespace ShareableSpreadSheet
             Mutex[] rowTempLocker = new Mutex[row + 1];
             for (int i = 0; i <= row1; i++)
             {
-                rowTempLocker[i] = indexMutices[i];
+                rowTempLocker[i] = rowIndexMutices[i];
                 for (int j = 0; j < this.column; j++)
                 {
                     str[i, j] = spreadSheet[i, j];
@@ -454,53 +454,21 @@ namespace ShareableSpreadSheet
             rowTempLocker[row1 + 1] = new Mutex();
             for (int i = 0; i < this.column; i++)
             {
-                str[row1 + 1, i] = ("New Row" + row + i + ",");
+                str[row1 + 1, i] = ($"NewRow: ({row1+1},{i+1})");
             }
             this.row++;
 
             for (int i = row1 + 1; i < this.row - 1; i++)
             {
-                rowTempLocker[i + 1] = indexMutices[i];
+                rowTempLocker[i + 1] = rowIndexMutices[i];
                 for (int j = 0; j < this.column; j++)
                 {
                     str[i + 1, j] = spreadSheet[i, j];
                 }
             }
-            indexMutices = rowTempLocker;
+            rowIndexMutices = rowTempLocker;
             this.spreadSheet = str;
-            structureChangeReleaseLock();
-
-            //structureChangeLock();
-            //if (this.row < row1)
-            //{
-            //    structureChangeReleaseLock();
-            //    throw new ArgumentOutOfRangeException($"Argument supplied: row1 {row1} is out of range");
-            //}
-
-            //string[,] str = new string[this.row +1, this.column];
-            //for (int i = 0; i < row1; i++) 
-            //{
-            //    for (int j = 0; j < this.column; j++)
-            //    {
-            //        str[i, j] = spreadSheet[i, j];
-            //    }
-            //}
-            //for (int i = row1 + 2; i < this.row +1; i++)
-            //{
-            //    for (int j = 0; j < this.column; j++)
-            //    {
-            //        str[i, j] = spreadSheet[i-1, j];
-            //    }
-            //}
-
-            //this.spreadSheet = str;
-            //this.row = row + 1;
-            //this.indexMutices = new Mutex[this.row];
-            //for (int i = 0; i < this.row; i++)
-            //{
-            //    this.indexMutices[i] = new Mutex();
-            //}
-            //structureChangeReleaseLock();
+            structureChangeReleaseLock();        
         }
 
         /// <summary>
@@ -509,35 +477,71 @@ namespace ShareableSpreadSheet
         /// <param name="col1"></param>
         public void addCol(int col1)
         {
-            Console.WriteLine("Add column");
+
+            Console.WriteLine("Add row");
+
+            if (col1 > this.column)
+            {
+                throw new ArgumentOutOfRangeException($"Argument supplied: row1 {col1} is out of range");
+            }
             structureChangeLock();
-            if (this.column < col1)
-            {
-                structureChangeReleaseLock();
-                throw new ArgumentOutOfRangeException($"Argument supplied: col {col1} is out of range");
-            }
 
-            String[,] temp_grid = new String[this.row, this.column + 1];
+            string[,] str = new string[row, column+1];
 
-            for (int i = 0; i <= col1; i++)
+            for (int i = 0; i <= this.row; i++)
             {
-                for (int j = 0; j < this.row; j++)
+                for (int j = 0; j < col1; j++)
                 {
-                    temp_grid[j, i] = this.spreadSheet[j, i];
+                    str[i, j] = spreadSheet[i, j];
                 }
             }
 
-            for (int i = col1 + 2; i < this.column + 1; i++)
+            for (int i = 0; i < this.row; i++)
             {
-                for (int j = 0; j < this.row; j++)
+                str[i, col1+1] = ($"NewCol: ({i+1},{col1+1})");
+            }
+            this.column++;
+
+            for (int i = 0; i < this.row; i++)
+            {
+                for (int j = col1 +1; j < this.column-1; j++)
                 {
-                    temp_grid[j, i] = this.spreadSheet[j, i - 1];
+                    str[i , j+1] = spreadSheet[i, j];
                 }
             }
-            this.spreadSheet = temp_grid;
-            this.column = column +1;
 
+            this.spreadSheet = str;
             structureChangeReleaseLock();
+
+            //Console.WriteLine("Add column");
+            //structureChangeLock();
+            //if (this.column < col1)
+            //{
+            //    structureChangeReleaseLock();
+            //    throw new ArgumentOutOfRangeException($"Argument supplied: col {col1} is out of range");
+            //}
+
+            //String[,] temp_grid = new String[this.row, this.column + 1];
+
+            //for (int i = 0; i <= col1; i++)
+            //{
+            //    for (int j = 0; j < this.row; j++)
+            //    {
+            //        temp_grid[j, i] = this.spreadSheet[j, i];
+            //    }
+            //}
+
+            //for (int i = col1 + 2; i < this.column + 1; i++)
+            //{
+            //    for (int j = 0; j < this.row; j++)
+            //    {
+            //        temp_grid[j, i] = this.spreadSheet[j, i - 1];
+            //    }
+            //}
+            //this.spreadSheet = temp_grid;
+            //this.column = column +1;
+
+            //structureChangeReleaseLock();
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace ShareableSpreadSheet
         {
             int Rows = 5;
             int Columns = 5;
-            int numOfThreads = 2;
+            int numOfThreads = 10;
             int numOfOperations = 10;
             int milis = 500;
             SharableSpreadSheet spreadSheet = new SharableSpreadSheet(Rows, Columns);
@@ -50,11 +50,9 @@ namespace ShareableSpreadSheet
 
             void DoWork()
             {
-                int nOperations = 10;
                 int mssleep = 500;
-                int rows = 5;
                 int cols = 5;
-                int nThreads = 2;
+                int nThreads = 10;
 
                 Console.Write("User[" + Thread.CurrentThread.ManagedThreadId + "]:");
                 for (int i = 0; i < 14; i++)

@@ -20,9 +20,10 @@ the lock type depending on method purposes (methods groups). \
 </br>
 <b>For example,</b> \
 the method “Search string” which searching for a cell contains a given string value: \
-![image](https://user-images.githubusercontent.com/79142560/173582947-75196577-4383-4bbc-9ac1-989ce6ec3d3d.png)
-As can be seen, the method’s critical section is wrapped by Read Lock and Search Lock.
+![image](https://user-images.githubusercontent.com/79142560/173582947-75196577-4383-4bbc-9ac1-989ce6ec3d3d.png) \
+As can be seen, the method’s critical section is wrapped by Read Lock and Search Lock. \
+</br>
 The Spread Sheet object data members that used in order to be able to manage the locking system: (following comments explains each data members purpose). \
-![image](https://user-images.githubusercontent.com/79142560/173583041-5b235267-113f-4b4f-a79a-02fb6162ecd5.png)
+![image](https://user-images.githubusercontent.com/79142560/173583041-5b235267-113f-4b4f-a79a-02fb6162ecd5.png) \
 A diagram represents the locking flow of an example method “Add row”: \
-![image](https://user-images.githubusercontent.com/79142560/173583098-d054d7a2-acff-4f91-9d6e-1026c329fd05.png)
+![image](https://user-images.githubusercontent.com/79142560/173583098-d054d7a2-acff-4f91-9d6e-1026c329fd05.png) \

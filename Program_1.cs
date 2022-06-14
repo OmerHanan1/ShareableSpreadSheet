@@ -14,7 +14,6 @@ namespace ShareableSpreadSheet
             int Rows = 100;
             int Columns = 100;
             int numOfThreads = 30;
-            int numOfOperations = 500;
             int milis = 500;
             SharableSpreadSheet spreadSheet = new SharableSpreadSheet(Rows, Columns);
 

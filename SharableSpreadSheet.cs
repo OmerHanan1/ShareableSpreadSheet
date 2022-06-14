@@ -21,7 +21,6 @@ namespace ShareableSpreadSheet
         private SemaphoreSlim searchSemaphore;              // Privilege the number of searchers as described in setConcurrentSearchLimit func. documentation
         private int readers;                                // Counts number of readers
         private int writers;                                // Counts number of writers
-        //private int numberOfUsers;                        // Given number of users
 
         /// <summary>
         /// Constructor
@@ -57,7 +56,7 @@ namespace ShareableSpreadSheet
             if (readers == 1)
             {
                 modeSwitcher.WaitOne();
-                Console.WriteLine("ReadLock-In");
+                //Console.WriteLine("ReadLock-In");
 
             }
             readMutex.ReleaseMutex();
@@ -73,7 +72,7 @@ namespace ShareableSpreadSheet
             if (readers == 0)
             {
                 modeSwitcher.Release();
-                Console.WriteLine("ReadRealease-In");
+                //Console.WriteLine("ReadRealease-In");
             }
             readMutex.ReleaseMutex();
 
@@ -98,7 +97,7 @@ namespace ShareableSpreadSheet
                 if (writers == 1)
                 {
                     modeSwitcher.WaitOne();
-                    Console.WriteLine("WriteLock-In");
+                    //Console.WriteLine("WriteLock-In");
                 }
                 writeMutex.ReleaseMutex();
                 rowIndexMutices[rowIndex].WaitOne();
@@ -126,7 +125,7 @@ namespace ShareableSpreadSheet
                 if (writers == 0)
                 {
                     modeSwitcher.Release();
-                    Console.WriteLine("WriteRealse-In");
+                    //Console.WriteLine("WriteRealse-In");
                 }
                 writeMutex.ReleaseMutex();
             }
@@ -142,7 +141,7 @@ namespace ShareableSpreadSheet
             if (searchSemaphore != null)
             {
                 searchSemaphore.Wait();
-                Console.WriteLine("SearchLock-In");
+                //Console.WriteLine("SearchLock-In");
             }
 
         }
@@ -156,7 +155,7 @@ namespace ShareableSpreadSheet
             if (searchSemaphore != null)
             {
                 searchSemaphore.Release();
-                Console.WriteLine("SearchRelease-In");
+                //Console.WriteLine("SearchRelease-In");
             }
         }
 
@@ -168,7 +167,7 @@ namespace ShareableSpreadSheet
 
             changeSpreadSheetStructureMutex.WaitOne();
             modeSwitcher.WaitOne();
-            Console.WriteLine("StructureLock-In");
+            //Console.WriteLine("StructureLock-In");
 
         }
 
@@ -180,7 +179,7 @@ namespace ShareableSpreadSheet
 
             modeSwitcher.Release();
             changeSpreadSheetStructureMutex.ReleaseMutex();
-            Console.WriteLine("StructureRelease-In");
+            //Console.WriteLine("StructureRelease-In");
 
         }
 
@@ -192,7 +191,7 @@ namespace ShareableSpreadSheet
         /// <returns>returns the string value inside the cell</returns>
         public String getCell(int row, int col)
         {
-            Console.WriteLine("Get cell");
+            //Console.WriteLine("Get cell");
             if (this.row < row || this.column < col) 
             {
                 throw new ArgumentOutOfRangeException($"Arguments supplied: row {row}:col {col}, are out of range");
@@ -212,7 +211,7 @@ namespace ShareableSpreadSheet
         /// <param name="str">string value</param>
         public void setCell(int row, int col, String str)
         {
-            Console.WriteLine("Set cell");
+            //Console.WriteLine("Set cell");
             if (this.row < row || this.column < col) {
                 throw new ArgumentOutOfRangeException($"Arguments supplied: row {row}:col {col}, are out of range");
             }
@@ -229,7 +228,7 @@ namespace ShareableSpreadSheet
         /// <returns>row,col index pair</returns>
         public Tuple<int, int> searchString(String str)
         {
-            Console.WriteLine("Search string");
+            //Console.WriteLine("Search string");
             readerLock();
             searchLock();
             for (int i = 0; i < row; i++)
@@ -259,7 +258,7 @@ namespace ShareableSpreadSheet
         /// <param name="row2">second row index in the exchange</param>
         public void exchangeRows(int row1, int row2)
         {
-            Console.WriteLine("Echange rows");
+            //Console.WriteLine("Echange rows");
             structureChangeLock();
             if(this.row < row1 || this.row < row2 || row1<0 || row2 <0) 
             {
@@ -292,7 +291,7 @@ namespace ShareableSpreadSheet
         /// <param name="col2"></param>
         public void exchangeCols(int col1, int col2)
         {
-            Console.WriteLine("Exchange columns");
+            //Console.WriteLine("Exchange columns");
             structureChangeLock();
             if (this.column < col1 || this.column < col2 || col1 <0 || col2 <0) 
             {
@@ -324,7 +323,7 @@ namespace ShareableSpreadSheet
         /// <returns>returns col number if exists, -1 if not</returns>
         public int searchInRow(int row, String str)
         {
-            Console.WriteLine("Search in row");
+            //Console.WriteLine("Search in row");
             readerLock();
             searchLock();
 
@@ -357,7 +356,7 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public int searchInCol(int col, String str)
         {
-            Console.WriteLine("Search in column");
+            //Console.WriteLine("Search in column");
             readerLock();
             searchLock();
 
@@ -397,7 +396,7 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public Tuple<int, int> searchInRange(int col1, int col2, int row1, int row2, String str)
         {
-            Console.WriteLine("Search in range");
+            //Console.WriteLine("Search in range");
             readerLock();
             searchLock();
             if ((col1 < 0) || (col2 < 0) || this.column < col1 || this.column < col2 || row2 < row1 || col2 < col1)
@@ -431,7 +430,7 @@ namespace ShareableSpreadSheet
         /// <param name="row1"></param>
         public void addRow(int row1)
         {
-            Console.WriteLine("Add row");
+            //Console.WriteLine("Add row");
 
             if (row1 > this.row)
             {
@@ -478,7 +477,7 @@ namespace ShareableSpreadSheet
         public void addCol(int col1)
         {
 
-            Console.WriteLine("Add col");
+            //Console.WriteLine("Add col");
 
             if (col1 > this.column)
             {
@@ -522,7 +521,7 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public Tuple<int, int>[] findAll(String str, bool caseSensitive)
         {
-            Console.WriteLine("Find all");
+            //Console.WriteLine("Find all");
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
             readerLock();
             searchLock();
@@ -565,7 +564,7 @@ namespace ShareableSpreadSheet
         /// <param name="caseSensitive"></param>
         public void setAll(String oldStr, String newStr, bool caseSensitive)
         {
-            Console.WriteLine("Set all");
+            //Console.WriteLine("Set all");
             readerLock();
             searchLock();
             for (int i = 0; i < this.row; i++)
@@ -602,7 +601,7 @@ namespace ShareableSpreadSheet
         /// <returns></returns>
         public Tuple<int, int> getSize()
         {
-            Console.WriteLine("Get size");
+            //Console.WriteLine("Get size");
             readerLock();
             Tuple<int,int> result = new Tuple<int, int>(this.row, this.column);
             readerReleaseLock();
@@ -618,7 +617,7 @@ namespace ShareableSpreadSheet
         /// <param name="nUsers"></param>
         public void setConcurrentSearchLimit(int nUsers)
         {
-            Console.WriteLine("Set concurrent zibi zibi");
+            //Console.WriteLine("Set concurrent");
             structureChangeLock();
             this.searchSemaphore = new SemaphoreSlim(nUsers-1, nUsers);
             structureChangeReleaseLock();
@@ -632,7 +631,7 @@ namespace ShareableSpreadSheet
         /// <param name="fileName"></param>
         public void save(String fileName)
         {
-            Console.WriteLine("Save");
+            //Console.WriteLine("Save");
             structureChangeLock();
             string filePathName = fileName;
             if(File.Exists(filePathName))
@@ -660,7 +659,7 @@ namespace ShareableSpreadSheet
         /// <param name="fileName"></param>
         public void load(String fileName)
         {
-            Console.WriteLine("Load");
+            //Console.WriteLine("Load");
             structureChangeLock();
             if (File.Exists(fileName))
             {

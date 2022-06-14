@@ -18,17 +18,15 @@ namespace ShareableSpreadSheet
             int milis = 500;
             SharableSpreadSheet spreadSheet = new SharableSpreadSheet(Rows, Columns);
 
-            Simulator(Rows, Columns, numOfThreads, numOfOperations, milis);
+            Simulator();
 
-            void Simulator(int rows, int cols, int nThreads, int nOperations, int mssleep)
+            void Simulator()
             {
                 int count = 1;
-                Rows = rows;
-                Columns = cols;
-
-                for (int i = 0; i < rows; i++)
+          
+                for (int i = 0; i < Rows; i++)
                 {
-                    for (int j = 0; j < cols; j++)
+                    for (int j = 0; j < Columns; j++)
                     {
                         spreadSheet.setCell(i,j,$"({i},{j})");
                         count++;
@@ -36,7 +34,7 @@ namespace ShareableSpreadSheet
                 }
 
                 List<Thread> threads = new List<Thread>();
-                for (int i = 0; i < nThreads; i++)
+                for (int i = 0; i < numOfThreads; i++)
                 {
                     var th = new Thread(DoWork);
                     threads.Add(th);
@@ -50,10 +48,7 @@ namespace ShareableSpreadSheet
 
             void DoWork()
             {
-                int mssleep = 500;
-                int cols = 5;
-                int nThreads = 10;
-
+               
                 Console.Write("User[" + Thread.CurrentThread.ManagedThreadId + "]:");
                 for (int i = 0; i < 14; i++)
                 {
@@ -70,7 +65,6 @@ namespace ShareableSpreadSheet
                         case 1:
                             spreadSheet.setCell(0, 0, "Eden");
                             Console.WriteLine("User[" + Thread.CurrentThread.ManagedThreadId + "]:" + "[" + DateTime.Now.ToString("HH:mm:ss tt") + "]" + " string 'Eden' inserted to cell [0,0]");
-
 
                             break;
                         case 2:
@@ -90,7 +84,7 @@ namespace ShareableSpreadSheet
                             break;
                         case 5:
                             Random rnd1 = new Random();
-                            int c = rnd.Next(0, cols);
+                            int c = rnd.Next(0, Columns);
                             //string s4 = spreadSheet.getCell(0, c);
 
                             int Row = spreadSheet.searchInRow(0, "testcell0");
@@ -140,12 +134,12 @@ namespace ShareableSpreadSheet
                             Console.WriteLine("User[" + Thread.CurrentThread.ManagedThreadId + "]:" + "[" + DateTime.Now.ToString("HH:mm:ss tt") + "] the current size of columns:" + Columns.ToString() + " and current size of rows:" + Rows.ToString());
                             break;
                         case 13:
-                            spreadSheet.setConcurrentSearchLimit(nThreads);
-                            Console.WriteLine("User[" + Thread.CurrentThread.ManagedThreadId + "]:" + "[" + DateTime.Now.ToString("HH:mm:ss tt") + "] update the current size to " + nThreads.ToString());
+                            spreadSheet.setConcurrentSearchLimit(numOfThreads);
+                            Console.WriteLine("User[" + Thread.CurrentThread.ManagedThreadId + "]:" + "[" + DateTime.Now.ToString("HH:mm:ss tt") + "] update the current size to " + numOfThreads.ToString());
                             break;
 
                     }
-                    Thread.Sleep(mssleep);
+                    Thread.Sleep(milis);
 
 
                 }

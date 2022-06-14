@@ -228,7 +228,6 @@ namespace ShareableSpreadSheet
         /// <returns>row,col index pair</returns>
         public Tuple<int, int> searchString(String str)
         {
-            //Console.WriteLine("Search string");
             readerLock();
             searchLock();
             for (int i = 0; i < row; i++)

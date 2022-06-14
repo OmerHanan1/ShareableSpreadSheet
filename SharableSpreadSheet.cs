@@ -18,9 +18,10 @@ namespace ShareableSpreadSheet
         private Mutex writeMutex;                           // Lock write mode exclusive operations
         private Mutex changeSpreadSheetStructureMutex;      // Lock operations that will change the main resource structure
         private Semaphore modeSwitcher;                     // Controls and switchs what operation is reflecting (read/write) 
-        private SemaphoreSlim searchSemaphore;              // Privilege the number of searchers as described in setConcurrentSearchLimit func. documentation
+        private Semaphore searchSemaphore;              // Privilege the number of searchers as described in setConcurrentSearchLimit func. documentation
         private int readers;                                // Counts number of readers
         private int writers;                                // Counts number of writers
+        private int numOfUsers;
 
         /// <summary>
         /// Constructor
@@ -43,7 +44,7 @@ namespace ShareableSpreadSheet
             searchSemaphore = null;
             readers = 0;
             writers = 0;
-
+            numOfUsers = nUsers;
         }
 
         /// <summary>
@@ -140,7 +141,8 @@ namespace ShareableSpreadSheet
 
             if (searchSemaphore != null)
             {
-                searchSemaphore.Wait();
+                //searchSemaphore.Wait();
+                searchSemaphore.WaitOne();
                 //Console.WriteLine("SearchLock-In");
             }
 
@@ -154,8 +156,18 @@ namespace ShareableSpreadSheet
 
             if (searchSemaphore != null)
             {
-                searchSemaphore.Release();
-                //Console.WriteLine("SearchRelease-In");
+                try {
+                    //searchSemaphore.Dispose();
+                    searchSemaphore.Release();
+                    //Console.WriteLine("SearchRelease-In");
+                }
+                catch 
+                {
+                    //structureChangeLock();
+                    if (numOfUsers <= 0) { numOfUsers = 30; }
+                    searchSemaphore = new Semaphore(numOfUsers, numOfUsers);
+                    //structureChangeReleaseLock();
+                }
             }
         }
 
@@ -228,6 +240,7 @@ namespace ShareableSpreadSheet
         /// <returns>row,col index pair</returns>
         public Tuple<int, int> searchString(String str)
         {
+            //Console.WriteLine("Search string");
             readerLock();
             searchLock();
             for (int i = 0; i < row; i++)
@@ -238,15 +251,15 @@ namespace ShareableSpreadSheet
                     {
                         if (spreadSheet[i, j].Contains(str))
                         {
-                            searchReleaseLock();
                             readerReleaseLock();
+                            searchReleaseLock();
                             return new Tuple<int, int>(i, j);
                         }
                     }
                 }
             }
-            searchReleaseLock();
             readerReleaseLock();
+            searchReleaseLock();
             return null;
         }
 
@@ -258,6 +271,7 @@ namespace ShareableSpreadSheet
         public void exchangeRows(int row1, int row2)
         {
             //Console.WriteLine("Echange rows");
+
             structureChangeLock();
             if(this.row < row1 || this.row < row2 || row1<0 || row2 <0) 
             {
@@ -274,7 +288,6 @@ namespace ShareableSpreadSheet
             string[] str= new string[this.column];
             for (int i = 0; i < column; i++)
             {
-
                 str[i] = spreadSheet[row1, i];
                 spreadSheet[row1, i] = spreadSheet[row2, i];
                 spreadSheet[row2, i] = str[i];
@@ -291,6 +304,7 @@ namespace ShareableSpreadSheet
         public void exchangeCols(int col1, int col2)
         {
             //Console.WriteLine("Exchange columns");
+
             structureChangeLock();
             if (this.column < col1 || this.column < col2 || col1 <0 || col2 <0) 
             {
@@ -337,13 +351,13 @@ namespace ShareableSpreadSheet
             {
                 if (str == spreadSheet[row, i].ToString())
                 {
-                    searchReleaseLock();
                     readerReleaseLock();
+                    searchReleaseLock();
                     return i;
                 }
             }
-            searchReleaseLock();
             readerReleaseLock();
+            searchReleaseLock();
             return -1;
         }
 
@@ -411,8 +425,8 @@ namespace ShareableSpreadSheet
                 {
                     if (str == spreadSheet[i, j])
                     {
-                        searchReleaseLock();
                         readerReleaseLock();
+                        searchReleaseLock();
                         return new Tuple<int, int>(i, j);
                     }
                 }
@@ -544,9 +558,8 @@ namespace ShareableSpreadSheet
                     }
                 }
             }
-
-            searchReleaseLock();
             readerReleaseLock();
+            searchReleaseLock();
             Tuple<int,int>[] tuples = new Tuple<int,int>[result.Count];
             for (int i=0; i<tuples.Length;i++)
             {
@@ -564,34 +577,42 @@ namespace ShareableSpreadSheet
         public void setAll(String oldStr, String newStr, bool caseSensitive)
         {
             //Console.WriteLine("Set all");
-            readerLock();
-            searchLock();
-            for (int i = 0; i < this.row; i++)
-            {
-                for (int j = 0; j < this.column; j++)
+            try
+            {             //readerLock();
+                searchLock();
+                for (int i = 0; i < this.spreadSheet.GetLength(0); i++)
                 {
-                    if (caseSensitive)
+                    for (int j = 0; j < this.spreadSheet.GetLength(1); j++)
                     {
-                        if (oldStr.Equals(this.spreadSheet[i, j]))
+
+                        if (caseSensitive)
                         {
-                            writerLock(i,j);
-                            spreadSheet[i, j] = newStr;
-                            writerReleaseLock(i,j);
+                            if (oldStr == this.spreadSheet[i, j])
+                            {
+                                setCell(i, j, newStr);
+                            }
                         }
-                    }
-                    else
-                    {
-                        if (oldStr.ToLower().Equals(this.spreadSheet[i, j].ToLower()))
+                        else
                         {
-                            writerLock(i, j);
-                            spreadSheet[i, j] = newStr;
-                            writerReleaseLock(i, j);
+                            if (oldStr.ToLower() == this.spreadSheet[i, j].ToLower())
+                            {
+                                setCell(i, j, newStr);
+
+                            }
                         }
                     }
                 }
+                searchReleaseLock();
+                //readerReleaseLock();
             }
-            searchReleaseLock();
-            readerReleaseLock();
+            catch (Exception ex) 
+            {
+                if (numOfUsers == -1) 
+                {
+                    this.numOfUsers = 50;
+                }
+                searchSemaphore = new Semaphore(this.numOfUsers , this.numOfUsers);
+            }
         }
 
         /// <summary>
@@ -616,9 +637,14 @@ namespace ShareableSpreadSheet
         /// <param name="nUsers"></param>
         public void setConcurrentSearchLimit(int nUsers)
         {
+            //if(nUsers == -1) 
+            //{
+            //    nUsers = 50;
+            //}
             //Console.WriteLine("Set concurrent");
             structureChangeLock();
-            this.searchSemaphore = new SemaphoreSlim(nUsers-1, nUsers);
+            //this.searchSemaphore = new SemaphoreSlim(nUsers-1, nUsers);
+            this.searchSemaphore = new Semaphore(nUsers, nUsers);
             structureChangeReleaseLock();
         }
 

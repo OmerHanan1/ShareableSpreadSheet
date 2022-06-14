@@ -11,10 +11,10 @@ namespace ShareableSpreadSheet
     {
         public static void Main(string[] args)
         {
-            int Rows = 5;
-            int Columns = 5;
-            int numOfThreads = 10;
-            int numOfOperations = 10;
+            int Rows = 100;
+            int Columns = 100;
+            int numOfThreads = 30;
+            int numOfOperations = 500;
             int milis = 500;
             SharableSpreadSheet spreadSheet = new SharableSpreadSheet(Rows, Columns);
 

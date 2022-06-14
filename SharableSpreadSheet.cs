@@ -478,7 +478,7 @@ namespace ShareableSpreadSheet
         public void addCol(int col1)
         {
 
-            Console.WriteLine("Add row");
+            Console.WriteLine("Add col");
 
             if (col1 > this.column)
             {
@@ -486,11 +486,11 @@ namespace ShareableSpreadSheet
             }
             structureChangeLock();
 
-            string[,] str = new string[row, column+1];
+            string[,] str = new string[row, column + 1];
 
-            for (int i = 0; i <= this.row; i++)
+            for (int i = 0; i < this.row; i++)
             {
-                for (int j = 0; j < col1; j++)
+                for (int j = 0; j <= col1; j++)
                 {
                     str[i, j] = spreadSheet[i, j];
                 }
@@ -498,50 +498,20 @@ namespace ShareableSpreadSheet
 
             for (int i = 0; i < this.row; i++)
             {
-                str[i, col1+1] = ($"NewCol: ({i+1},{col1+1})");
+                str[i, col1 + 1] = ($"NewCol: ({i + 1},{col1 + 1})");
             }
             this.column++;
 
             for (int i = 0; i < this.row; i++)
             {
-                for (int j = col1 +1; j < this.column-1; j++)
+                for (int j = col1 + 1; j < this.column - 1; j++)
                 {
-                    str[i , j+1] = spreadSheet[i, j];
+                    str[i, j + 1] = spreadSheet[i, j];
                 }
             }
 
             this.spreadSheet = str;
             structureChangeReleaseLock();
-
-            //Console.WriteLine("Add column");
-            //structureChangeLock();
-            //if (this.column < col1)
-            //{
-            //    structureChangeReleaseLock();
-            //    throw new ArgumentOutOfRangeException($"Argument supplied: col {col1} is out of range");
-            //}
-
-            //String[,] temp_grid = new String[this.row, this.column + 1];
-
-            //for (int i = 0; i <= col1; i++)
-            //{
-            //    for (int j = 0; j < this.row; j++)
-            //    {
-            //        temp_grid[j, i] = this.spreadSheet[j, i];
-            //    }
-            //}
-
-            //for (int i = col1 + 2; i < this.column + 1; i++)
-            //{
-            //    for (int j = 0; j < this.row; j++)
-            //    {
-            //        temp_grid[j, i] = this.spreadSheet[j, i - 1];
-            //    }
-            //}
-            //this.spreadSheet = temp_grid;
-            //this.column = column +1;
-
-            //structureChangeReleaseLock();
         }
 
         /// <summary>

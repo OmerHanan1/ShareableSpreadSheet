@@ -112,7 +112,7 @@ namespace ShareableSpreadSheet
                             Console.WriteLine("User[" + Thread.CurrentThread.Name + "]:" + "[" + DateTime.Now.ToString("HH:mm:ss tt") + "] " + s6 + " was found in a range col(0,3) and row(0,3) in cell [0,0]");
                             break;
                         case 8:
-                            spreadSheet.addRow(0);
+                            spreadSheet.addRow(2);
                             Rows++;
 
                             Console.WriteLine("User[" + Thread.CurrentThread.Name + "]:" + "[" + DateTime.Now.ToString("HH:mm:ss tt") + "] " + "add another row after row 0");

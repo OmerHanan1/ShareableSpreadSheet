@@ -40,7 +40,7 @@ namespace ShareableSpreadSheet
             readMutex = new Mutex();
             writeMutex = new Mutex();
             changeSpreadSheetStructureMutex = new Mutex();
-            modeSwitcher = new Semaphore(1,1);
+            modeSwitcher = new Semaphore(1, 1);
             searchSemaphore = null;
             readers = 0;
             writers = 0;
@@ -136,7 +136,7 @@ namespace ShareableSpreadSheet
         /// <summary>
         /// Lock, search
         /// </summary>
-        private void searchLock() 
+        private void searchLock()
         {
 
             if (searchSemaphore != null)
@@ -151,17 +151,18 @@ namespace ShareableSpreadSheet
         /// <summary>
         /// Lock releasing, search
         /// </summary>
-        private void searchReleaseLock() 
+        private void searchReleaseLock()
         {
 
             if (searchSemaphore != null)
             {
-                try {
+                try
+                {
                     //searchSemaphore.Dispose();
                     searchSemaphore.Release();
                     //Console.WriteLine("SearchRelease-In");
                 }
-                catch 
+                catch
                 {
                     //structureChangeLock();
                     if (numOfUsers <= 0) { numOfUsers = 30; }
@@ -204,7 +205,7 @@ namespace ShareableSpreadSheet
         public String getCell(int row, int col)
         {
             //Console.WriteLine("Get cell");
-            if (this.row < row || this.column < col) 
+            if (this.row < row || this.column < col)
             {
                 throw new ArgumentOutOfRangeException($"Arguments supplied: row {row}:col {col}, are out of range");
             }
@@ -224,7 +225,8 @@ namespace ShareableSpreadSheet
         public void setCell(int row, int col, String str)
         {
             //Console.WriteLine("Set cell");
-            if (this.row < row || this.column < col) {
+            if (this.row < row || this.column < col)
+            {
                 throw new ArgumentOutOfRangeException($"Arguments supplied: row {row}:col {col}, are out of range");
             }
 
@@ -273,7 +275,7 @@ namespace ShareableSpreadSheet
             //Console.WriteLine("Echange rows");
 
             structureChangeLock();
-            if(this.row < row1 || this.row < row2 || row1<0 || row2 <0) 
+            if (this.row < row1 || this.row < row2 || row1 < 0 || row2 < 0)
             {
                 structureChangeReleaseLock();
                 throw new ArgumentOutOfRangeException($"Arguments supplied: row1 {row1}:row2 {row2}, are out of range");
@@ -285,13 +287,13 @@ namespace ShareableSpreadSheet
                 return;
             }
 
-            string[] str= new string[this.column];
+            string[] str = new string[this.column];
             for (int i = 0; i < column; i++)
             {
                 str[i] = spreadSheet[row1, i];
                 spreadSheet[row1, i] = spreadSheet[row2, i];
                 spreadSheet[row2, i] = str[i];
-                
+
             }
             structureChangeReleaseLock();
         }
@@ -306,7 +308,7 @@ namespace ShareableSpreadSheet
             //Console.WriteLine("Exchange columns");
 
             structureChangeLock();
-            if (this.column < col1 || this.column < col2 || col1 <0 || col2 <0) 
+            if (this.column < col1 || this.column < col2 || col1 < 0 || col2 < 0)
             {
                 structureChangeReleaseLock();
                 throw new ArgumentOutOfRangeException($"Arguments supplied: col1 {col1}:col2 {col2}, are out of range");
@@ -318,12 +320,12 @@ namespace ShareableSpreadSheet
                 return;
             }
 
-            string[] str= new string[this.row];
+            string[] str = new string[this.row];
             for (int i = 0; i < row; i++)
             {
                 str[i] = spreadSheet[i, col1];
-                spreadSheet[i,col1] = spreadSheet[i, col2];
-                spreadSheet[i,col2] = str[i];
+                spreadSheet[i, col1] = spreadSheet[i, col2];
+                spreadSheet[i, col2] = str[i];
             }
             structureChangeReleaseLock();
         }
@@ -373,7 +375,7 @@ namespace ShareableSpreadSheet
             readerLock();
             searchLock();
 
-            if (this.column < col) 
+            if (this.column < col)
             {
                 searchReleaseLock();
                 readerReleaseLock();
@@ -452,7 +454,7 @@ namespace ShareableSpreadSheet
             structureChangeLock();
 
             string[,] str = new string[row + 1, column];
-            
+
             Mutex[] rowTempLocker = new Mutex[row + 1];
             for (int i = 0; i <= row1; i++)
             {
@@ -466,7 +468,7 @@ namespace ShareableSpreadSheet
             rowTempLocker[row1 + 1] = new Mutex();
             for (int i = 0; i < this.column; i++)
             {
-                str[row1 + 1, i] = ($"NewRow: ({row1+1},{i+1})");
+                str[row1 + 1, i] = ($"NewRow: ({row1 + 1},{i + 1})");
             }
             this.row++;
 
@@ -480,7 +482,7 @@ namespace ShareableSpreadSheet
             }
             rowIndexMutices = rowTempLocker;
             this.spreadSheet = str;
-            structureChangeReleaseLock();        
+            structureChangeReleaseLock();
         }
 
         /// <summary>
@@ -560,8 +562,8 @@ namespace ShareableSpreadSheet
             }
             readerReleaseLock();
             searchReleaseLock();
-            Tuple<int,int>[] tuples = new Tuple<int,int>[result.Count];
-            for (int i=0; i<tuples.Length;i++)
+            Tuple<int, int>[] tuples = new Tuple<int, int>[result.Count];
+            for (int i = 0; i < tuples.Length; i++)
             {
                 tuples[i] = result[i];
             }
@@ -605,13 +607,13 @@ namespace ShareableSpreadSheet
                 searchReleaseLock();
                 //readerReleaseLock();
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                if (numOfUsers == -1) 
+                if (numOfUsers == -1)
                 {
                     this.numOfUsers = 50;
                 }
-                searchSemaphore = new Semaphore(this.numOfUsers , this.numOfUsers);
+                searchSemaphore = new Semaphore(this.numOfUsers, this.numOfUsers);
             }
         }
 
@@ -623,7 +625,7 @@ namespace ShareableSpreadSheet
         {
             //Console.WriteLine("Get size");
             readerLock();
-            Tuple<int,int> result = new Tuple<int, int>(this.row, this.column);
+            Tuple<int, int> result = new Tuple<int, int>(this.row, this.column);
             readerReleaseLock();
             return result;
         }
@@ -656,10 +658,9 @@ namespace ShareableSpreadSheet
         /// <param name="fileName"></param>
         public void save(String fileName)
         {
-            //Console.WriteLine("Save");
             structureChangeLock();
             string filePathName = fileName;
-            if(File.Exists(filePathName))
+            if (File.Exists(filePathName))
                 File.Delete(filePathName);
 
             using (StreamWriter streamWriter = File.AppendText(filePathName))
@@ -684,15 +685,14 @@ namespace ShareableSpreadSheet
         /// <param name="fileName"></param>
         public void load(String fileName)
         {
-            //Console.WriteLine("Load");
             structureChangeLock();
-            if (File.Exists(fileName))
+            if (!File.Exists(fileName))
             {
                 structureChangeReleaseLock();
                 return;
             }
             string filePathName = fileName;
-            using (StreamReader streamReader = new StreamReader(filePathName)) 
+            using (StreamReader streamReader = new StreamReader(filePathName))
             {
                 int readedRow = Int32.Parse(streamReader.ReadLine());
                 int readedColumn = Int32.Parse(streamReader.ReadLine());
@@ -704,7 +704,7 @@ namespace ShareableSpreadSheet
                 {
                     for (int j = 0; j < readedColumn; j++)
                     {
-                        this.spreadSheet[i,j] = streamReader.ReadLine();
+                        this.spreadSheet[i, j] = streamReader.ReadLine();
                     }
                 }
             }

@@ -71,8 +71,28 @@ namespace ShareableSpreadSheet
                 Console.WriteLine(ex.Message);
             }
 
+
+
+
+
+
+            int size = 1;
+
             SharableSpreadSheet spreadSheet = new SharableSpreadSheet(rows, cols);
+
+
+
             Simulator(rows, cols, nThreads, nOperations, mssleep);
+
+
+            spreadSheet.save("ExampleFile");
+
+
+
+            SharableSpreadSheet newSpreadSheet = new SharableSpreadSheet(size, size);
+            newSpreadSheet.load("ExampleFile");
+            bool stop = true;
+
 
             void Simulator(int rows, int cols, int nThreads, int nOperations, int mssleep)
             {
